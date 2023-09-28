@@ -8,9 +8,11 @@
 import SwiftUI
 
 struct ContentView: View {
-    let cars = ["🚗", "🏎", "🚓", "🛞", "🚗", "🏎", "🚓", "🛞"]
+    @State var emojis = [String]()
     
-    @State var cardCount = 1
+    let vehicles = ["🚗", "🏎", "🚓", "🛞", "🏎", "🛞", "🚗", "🚓"]
+    let food = ["🍎", "🍕", "🍗", "🍪", "🥐", "🍕", "🍔", "🍎", "🍪", "🍔", "🍗", "🥐"]
+    let animals = ["🐶", "🐯", "🐶", "🐥", "🐴", "🐧", "🦊", "🐥", "🐼", "🐴", "🐰", "🐰", "🐼", "🦊", "🐯", "🐧"]
     
     var body: some View {
         VStack {
@@ -19,55 +21,65 @@ struct ContentView: View {
                 cards
             }
             Spacer()
-            cardCountAdjusters
+            themeChangeButtons
         }
         .padding()
     }
     
     var cards: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))]) {
-            ForEach(0..<cardCount, id: \.self) { index in
-                CardView(emoji: cars[index])
+            ForEach(emojis.indices, id: \.self) { index in
+                CardView(content: emojis[index])
                     .aspectRatio(2/3, contentMode: .fit)
             }
         }
+        // and I don't know how to change cards' color
         .foregroundColor(.red)
     }
     
-    func cardCountAdjusting(by offset: Int, sign: String) -> some View {
-        Button(action: {
-            cardCount += offset
-        }, label: {
-            Image(systemName: "\(sign).rectangle.portrait.fill")
-        })
-        .disabled(cardCount + offset < 1 || cardCount + offset > 8)
-    }
-    
-    var cardCountAdjusters: some View {
-        HStack {
-            cardRemover
-            Spacer()
-            cardAdder
+    func buttonStyleChange(on title: String, symbol: String) -> some View {
+        VStack {
+            Image(systemName: symbol).font(.title)
+            Text(title)
         }
         .imageScale(.large)
-        .font(.largeTitle)
     }
     
-    var cardAdder: some View {
-        cardCountAdjusting(by: +1, sign: "plus")
-        
-    }
-    
-    var cardRemover: some View {
-        cardCountAdjusting(by: -1, sign: "minus")
-        
+    var themeChangeButtons: some View {
+        HStack(alignment: .bottom) {
+            Spacer()
+            // this code smells
+            Button(action: {
+                emojis = vehicles.shuffled()
+            }, label: {
+                buttonStyleChange(on: "Vehicles", symbol: "car.fill")
+            })
+            
+            Spacer()
+            
+            Button(action: {
+                emojis = food.shuffled()
+            }, label: {
+                buttonStyleChange(on: "Food", symbol: "fork.knife")
+            })
+            
+            Spacer()
+            
+            Button(action: {
+                emojis = animals.shuffled()
+            }, label: {
+                buttonStyleChange(on: "Animals", symbol: "swift")
+            })
+            
+            Spacer()
+        }
     }
 }
 
 struct CardView: View {
-    var emoji: String
+    var content: String
     
-    @State var isFaceUp = true
+    @State var isFaceUp = false
 
     var body: some View {
         ZStack {
@@ -75,7 +87,7 @@ struct CardView: View {
             Group {
                 base.fill(.white)
                 base.strokeBorder(lineWidth: 2)
-                Text(emoji).font(.largeTitle)
+                Text(content).font(.largeTitle)
             }
             .opacity(isFaceUp ? 1 : 0)
             
